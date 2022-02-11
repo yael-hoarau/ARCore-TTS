@@ -33,8 +33,11 @@ public class BoxRenderer {
     private static final String TAG = BoxRenderer.class.getSimpleName();
     private static final int NUM_FACES = 6;
 
-    private static final String VERTEX_SHADER_NAME = "shaders/box.vert";
-    private static final String FRAGMENT_SHADER_NAME = "shaders/box.frag";
+//    private static final String VERTEX_SHADER_NAME = "shaders/box.vert";
+//    private static final String FRAGMENT_SHADER_NAME = "shaders/box.frag";
+
+    private final String VERTEX_SHADER_NAME;
+    private final String FRAGMENT_SHADER_NAME;
 
     // Stores the triangulation of the cube.
     private FloatBuffer vertexBuffer;
@@ -45,7 +48,15 @@ public class BoxRenderer {
     private int vPosition;
     private int uViewProjection;
 
-    public BoxRenderer() {}
+    public BoxRenderer() {
+        VERTEX_SHADER_NAME = "shaders/box.vert";
+        FRAGMENT_SHADER_NAME = "shaders/box.frag";
+    }
+
+    public BoxRenderer(String vertexShaderName, String fragShaderName) {
+        VERTEX_SHADER_NAME = vertexShaderName;
+        FRAGMENT_SHADER_NAME = fragShaderName;
+    }
 
     public void createOnGlThread(Context context) throws IOException {
         ShaderUtil.checkGLError(TAG, "Create");
@@ -66,12 +77,12 @@ public class BoxRenderer {
 
         // Sets the index buffer, which is constant regardless of the size/position of the cube.
         short[] indices = {
-            0, 1, 2, 2, 1, 3, // Front.
-            4, 5, 6, 6, 5, 7, // Back.
-            8, 9, 10, 10, 9, 11, // Left.
-            12, 13, 14, 14, 13, 15, // Right.
-            16, 17, 18, 18, 17, 19, // Top.
-            20, 21, 22, 22, 21, 23  // Bottom.
+                0, 1, 2, 2, 1, 3, // Front.
+                4, 5, 6, 6, 5, 7, // Back.
+                8, 9, 10, 10, 9, 11, // Left.
+                12, 13, 14, 14, 13, 15, // Right.
+                16, 17, 18, 18, 17, 19, // Top.
+                20, 21, 22, 22, 21, 23  // Bottom.
         };
         ByteBuffer indexByteBuffer = ByteBuffer.allocateDirect(2 * indices.length); // 2 bytes per short.
         indexByteBuffer.order(ByteOrder.nativeOrder());
