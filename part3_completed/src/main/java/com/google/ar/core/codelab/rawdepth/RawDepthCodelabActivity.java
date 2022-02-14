@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -75,6 +76,10 @@ public class RawDepthCodelabActivity extends AppCompatActivity implements GLSurf
     private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
     private final BoxRenderer closestBoxRenderer = new BoxRenderer();
     private final BoxRenderer farBoxRenderer = new BoxRenderer("shaders/box.vert", "shaders/farBox.frag");
+
+    private long msElapsedFromTTS = 0; // ms unit
+    private final long throttlingTimeTTS = 2500; // ms
+    private final double zThreshold = 0.;
 
     private Text2Speech tts;
 
@@ -277,12 +282,18 @@ public class RawDepthCodelabActivity extends AppCompatActivity implements GLSurf
             // Draw boxes around clusters of points.
             PointClusteringHelper clusteringHelper = new PointClusteringHelper(points);
             List<AABB> clusters = clusteringHelper.findClusters();
-            AABB closest = clusters.stream().max(Comparator.comparing(AABB::getMaxZ)).isPresent() ? clusters.stream().max(Comparator.comparing(AABB::getMaxZ)).get() : null;
+            AABB closest = clusters.stream().min(AABB::compareTo).orElse(null);
 
             for (AABB cluster : clusters) {
                 if (cluster == closest) {
                     closestBoxRenderer.draw(closest, camera);
-                    tts.speech(Math.abs(Math.floor(closest.getMaxZ() * 10) / 10) + " mètres");
+                    final double z = Math.abs(Math.floor( closest.getMaxZ() * 10 / 10 ));
+
+                    if ( (z > zThreshold) && (System.currentTimeMillis() - msElapsedFromTTS > throttlingTimeTTS) ) {
+                        tts.speech(z + " mètres");
+                        msElapsedFromTTS = System.currentTimeMillis();
+                    }
+
                 } else {
                     farBoxRenderer.draw(cluster, camera);
                 }

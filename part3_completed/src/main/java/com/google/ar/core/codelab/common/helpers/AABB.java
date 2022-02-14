@@ -16,8 +16,12 @@
 
 package com.google.ar.core.codelab.common.helpers;
 
+import android.support.annotation.NonNull;
+
+import java.util.Comparator;
+
 // An axis-aligned bounding box is defined by the minimum and maximum extends in each dimension.
-public class AABB {
+public class AABB implements Comparable<AABB> {
     public float minX = Float.MAX_VALUE;
     public float minY = Float.MAX_VALUE;
     public float minZ = Float.MAX_VALUE;
@@ -36,5 +40,17 @@ public class AABB {
 
     public float getMaxZ() {
         return maxZ;
+    }
+
+    // assuming origin is (0, 0, 0)
+    protected float dist() {
+        final float nearestX = Math.min(Math.abs(minX), Math.abs(maxX));
+        return (float) Math.sqrt((nearestX * nearestX) + (maxZ * maxZ));
+
+    }
+
+    @Override
+    public int compareTo(@NonNull AABB otherBox) {
+        return Math.round(this.dist() - otherBox.dist());
     }
 }
